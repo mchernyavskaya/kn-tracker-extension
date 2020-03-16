@@ -1,0 +1,30 @@
+{
+    "name": "Kita Navigator Tracker Extensions",
+    "description": "Kita Navigator Tracker Extension",
+    "version": "1.0",
+    "manifest_version": 2,
+    "browser_action": {
+        "default_popup": "settings.html"
+    },
+    "content_scripts": [{
+        "matches": [
+            "https://konto.service.berlin.de/*"
+        ],
+        "js": [
+            "settings.js"
+        ],
+        "css": [
+            "settings.css"
+        ]
+    }],
+    "background": {
+        "scripts": ["background.js"],
+        "persistent": false
+    },
+    "permissions": [
+        "storage",
+        "activeTab",
+        "tabs",
+        "https://konto.service.berlin.de/*"
+    ]
+}

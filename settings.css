@@ -1,0 +1,15 @@
+#knRequestsTable {
+    min-width: 500px;
+    max-width: 1000px;
+    padding: 5px;
+    margin: 5px;
+}
+
+#knRequestsTable td {
+    border-style: solid;
+    border-width: 2px;
+    border-color: chocolate;
+    border-radius: 5px;
+    padding: 10px;
+    font-size: smaller;
+}
