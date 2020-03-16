@@ -13,3 +13,73 @@
     padding: 10px;
     font-size: smaller;
 }
+
+#processMessageList {
+    width: 90%;
+    padding: 5px;
+    border: 2px chocolate solid;
+    border-radius: 5px;
+    border-color: chocolate;
+    background-color: peachpuff;
+}
+
+#processMessageList:hover {
+    cursor: pointer;
+    background-color: coral;
+}
+
+body {
+    min-width: 500px;
+}
+
+h3 {
+    margin: 4px;
+}
+
+
+/* Style the tab */
+
+.tab {
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background-color: #f1f1f1;
+}
+
+
+/* Style the buttons that are used to open the tab content */
+
+.tab button {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 4px 6px;
+    transition: 0.3s;
+    min-width: 100px;
+}
+
+
+/* Change background color of buttons on hover */
+
+.tab button:hover {
+    background-color: #ddd;
+}
+
+
+/* Create an active/current tablink class */
+
+.tab button.active {
+    background-color: #ccc;
+}
+
+
+/* Style the tab content */
+
+.tabcontent {
+    display: none;
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-top: none;
+    text-align: center;
+}

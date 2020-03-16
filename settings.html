@@ -8,10 +8,27 @@
 <body>
     <h1>Kita Navigator Helper</h1>
     <h3 id="knStatusLabel"></h3>
-    <table id="knRequestsTable">
-    </table>
-    <button id="refreshTable">Refresh Table from Storage</button>
-    <button id="processMessageList">Process Message List</button>
+    <!-- Tab links -->
+    <div class="tab">
+        <button class="tablinks" id="openAllTab">All Messages</button>
+        <button class="tablinks" id="openGroupsTab">Grouped Messages</button>
+    </div>
+
+    <!-- Tab content -->
+    <div id="allMessages" class="tabcontent">
+        <h3>All Messages</h3>
+        <p>You should be logged into Kita Navigator and have your 'Postfach' tab (with the message list) open in Chrome. When you're on it, use the 'Process Messages' button to reload the messages into the extension.
+            <b>Do it every time you have a new message.</b>
+        </p>
+        <button id="processMessageList">Process Messages List</button>
+        <table id="knRequestsTable">
+        </table>
+    </div>
+
+    <div id="messageGroups" class="tabcontent">
+        <h3>Grouped Messages</h3>
+        <p>Aggregated by type.</p>
+    </div>
 </body>
 
 </html>

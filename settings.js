@@ -31,8 +31,20 @@ var KnStatuses = {
 }
 
 var KnStorage = {
-    processRequests(results) {
-        var requests = results.requests;
+    parseCurrentStorage() {
+        var requests = [];
+        var i = 0;
+        for (var key in localStorage) {
+            console && console.log(key);
+            var request = JSON.parse(localStorage[key]);
+            console && console.log('found saved request', request);
+            request.id = key;
+            requests.push(request);
+            i++;
+            if (i >= localStorage.length) {
+                break;
+            }
+        }
         var t = document.getElementById(KnSettingsConstants.TABLE_ID);
         while (t.hasChildNodes()) {
             t.removeChild(t.firstChild);
@@ -51,23 +63,6 @@ var KnStorage = {
                 }
             }
         });
-    },
-
-    parseCurrentStorage() {
-        var requests = [];
-        var i = 0;
-        for (var key in localStorage) {
-            console && console.log(key);
-            var request = JSON.parse(localStorage[key]);
-            console && console.log('found saved request', request);
-            request.id = key;
-            requests.push(request);
-            i++;
-            if (i >= localStorage.length) {
-                break;
-            }
-        }
-        return { requests };
     }
 };
 
@@ -102,8 +97,7 @@ var KnList = {
                 processedCount++;
                 if (processedCount >= links.length) {
                     statusLabel.innerText = `All processed!`;
-                    const requests = KnStorage.parseCurrentStorage();
-                    KnStorage.processRequests(requests);
+                    KnStorage.parseCurrentStorage();
                 }
             });
         });
@@ -173,8 +167,34 @@ var KnList = {
 
 };
 
+var KnTabs = {
+    openTab(evt, tabId) {
+        // Declare all variables
+        var i, tabcontent, tablinks;
+        // Get all elements with class="tabcontent" and hide them
+        tabcontent = document.getElementsByClassName("tabcontent");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+        // Get all elements with class="tablinks" and remove the class "active"
+        tablinks = document.getElementsByClassName("tablinks");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+        // Show the current tab, and add an "active" class to the button that opened the tab
+        document.getElementById(tabId).style.display = "block";
+        evt.currentTarget.className += " active";
+    },
+
+    openDefaultTab() {
+        document.getElementById("openAllTab").click();
+    }
+};
+
 document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('refreshTable').addEventListener('click', KnStorage.parseCurrentStorage);
     document.getElementById('processMessageList').addEventListener('click', KnList.getMessageList);
-    // KnStorage.parseCurrentStorage();
+    document.getElementById('openAllTab').addEventListener('click', (e) => { KnTabs.openTab(e, 'allMessages') });
+    document.getElementById('openGroupsTab').addEventListener('click', (e) => { KnTabs.openTab(e, 'messageGroups') });
+    KnTabs.openDefaultTab();
+    KnStorage.parseCurrentStorage();
 });
