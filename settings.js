@@ -102,14 +102,11 @@ var KnStorage = {
             .forEach((request, index) => {
                 var row = t.insertRow();
                 if (!!request[KnStatuses.requestRefused.id]) {
-                    console && console.log('declined cls');
                     row.className = 'declined';
                 } else if (!!request[KnStatuses.waitList.id]) {
                     row.className = 'waitlisted';
-                    console && console.log('waitlisted cls');
                 } else if (!!request[KnStatuses.requestSent.id]) {
                     row.className = 'unanswered';
-                    console && console.log('unanswered cls');
                 }
                 var leftCell = row.insertCell();
                 var middleCell = row.insertCell();
