@@ -31,19 +31,49 @@ var KnStatuses = {
 }
 
 var KnStorage = {
+    getSavedRequest(reqId) {
+        const saved = localStorage.getItem('requests');
+        const requests = !!saved ? JSON.parse(saved) : {};
+        return requests[reqId];
+    },
+
+    isLinkSaved(link) {
+        const saved = localStorage.getItem('processedLinks');
+        const links = !!saved ? JSON.parse(saved) : [];
+        return links.indexOf(link) >= 0;
+    },
+
+    saveRequest(reqId, item) {
+        const saved = localStorage.getItem('requests');
+        const requests = !!saved ? JSON.parse(saved) : {};
+        requests[reqId] = item;
+        localStorage.setItem('requests', JSON.stringify(requests));
+    },
+
+    saveLink(link) {
+        if (!KnStorage.isLinkSaved(link)) {
+            const saved = localStorage.getItem('processedLinks');
+            const links = !!saved ? JSON.parse(saved) : [];
+            links.push(link);
+            localStorage.setItem('processedLinks', JSON.stringify(links));
+        }
+    },
+
+    countLinks() {
+        const saved = localStorage.getItem('processedLinks');
+        const links = !!saved ? JSON.parse(saved) : [];
+        return links.length;
+    },
+
     parseCurrentStorage() {
         var requests = [];
-        var i = 0;
-        for (var key in localStorage) {
+        var saved = JSON.parse(localStorage.getItem('requests') || '{}');
+        for (const key in saved) {
             console && console.log(key);
-            var request = JSON.parse(localStorage[key]);
+            const request = saved[key];
             console && console.log('found saved request', request);
             request.id = key;
             requests.push(request);
-            i++;
-            if (i >= localStorage.length) {
-                break;
-            }
         }
         var t = document.getElementById(KnSettingsConstants.TABLE_ID);
         while (t.hasChildNodes()) {
@@ -67,10 +97,12 @@ var KnStorage = {
 };
 
 var KnList = {
-    getMessageList() {
+    refreshMessageList(processAll) {
+        console && console.log('refresh');
         chrome.tabs.query({ currentWindow: true, active: true }, tabs => {
             var tab = tabs[0];
             if (tab) {
+                console && console.log('tab', tab);
                 var script = `
                 var links = [];
                 (document.querySelectorAll('a.gg-servicelink') || []).forEach(function(link) {
@@ -78,28 +110,42 @@ var KnList = {
                 });
                 { links: links }`;
                 chrome.tabs.executeScript(tab.tabId, { code: script },
-                    KnList.processMessageList);
+                    (links) => KnList.processMessageList(links, processAll));
             }
         });
     },
 
-    processMessageList(results) {
-        localStorage.clear();
+    renderIfDone(links) {
+        const statusLabel = document.getElementById('knStatusLabel');
+        const processedCount = KnStorage.countLinks();
+        if (processedCount >= links.length) {
+            statusLabel.innerText = `All processed!`;
+            KnStorage.parseCurrentStorage();
+        } else {
+            console && console.log('Processed count', processedCount);
+        }
+    },
+
+    processMessageList(results, processAll) {
+        console && console.log('processMessageList', results, processAll);
+        if (processAll) {
+            localStorage.clear();
+        }
         var links = results && results.length ? results[0] : [];
         const statusLabel = document.getElementById('knStatusLabel');
-        var processedCount = 0;
         links.forEach((link, i) => {
-            console && console.log(link);
             statusLabel.innerText = `Processing message ${i} out of ${links.length}...`;
-            KnList.processOneMessage(link, () => {
-                statusLabel.innerText = `Processed message ${i} out of ${links.length}...`;
-                console && console.log('callback called', i, processedCount);
-                processedCount++;
-                if (processedCount >= links.length) {
-                    statusLabel.innerText = `All processed!`;
-                    KnStorage.parseCurrentStorage();
-                }
-            });
+            if (processAll || !KnStorage.isLinkSaved(link)) {
+                KnStorage.saveLink(link);
+                console && console.log(link);
+                KnList.processOneMessage(link, () => {
+                    statusLabel.innerText = `Processed message ${i} out of ${links.length}...`;
+                    KnList.renderIfDone(links);
+                });
+            } else {
+                console && console.log('Skipping already processed message');
+                KnList.renderIfDone(links);
+            }
         });
     },
 
@@ -150,21 +196,19 @@ var KnList = {
             if (result && result.length > 1) {
                 var reqId = result[1];
                 var kitaName = result[2];
-                var reqIdStr = `${reqId}`;
-                console && console.log(localStorage.getItem(reqIdStr));
-                var item = JSON.parse(localStorage.getItem(reqIdStr) || '{}');
+                var item = KnStorage.getSavedRequest(reqId) || {};
+                console && console.log(item);
                 console && console.log('item found', item);
                 item.kitaName = kitaName;
                 console && console.log('message type', messageType);
                 item[messageType] = text;
                 console && console.log('item to save', item);
-                localStorage.setItem(reqIdStr, JSON.stringify(item));
+                KnStorage.saveRequest(reqId, item);
             }
         } else {
-            console && console.log('Not parsed', text);
+            console && console.log(`Not parsed as type ${messageType}`, text);
         }
     }
-
 };
 
 var KnTabs = {
@@ -192,9 +236,9 @@ var KnTabs = {
 };
 
 document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('processMessageList').addEventListener('click', KnList.getMessageList);
+    document.getElementById('processMessageList').addEventListener('click', () => KnList.refreshMessageList(true));
     document.getElementById('openAllTab').addEventListener('click', (e) => { KnTabs.openTab(e, 'allMessages') });
     document.getElementById('openGroupsTab').addEventListener('click', (e) => { KnTabs.openTab(e, 'messageGroups') });
     KnTabs.openDefaultTab();
-    KnStorage.parseCurrentStorage();
+    KnList.refreshMessageList(false);
 });
