@@ -30,6 +30,7 @@ var KnStatuses = {
     }
 }
 
+
 var KnStorage = {
     getSavedRequest(reqId) {
         const saved = localStorage.getItem('requests');
@@ -65,6 +66,22 @@ var KnStorage = {
         return links.length;
     },
 
+    checkFilter(request, statusId) {
+        switch (statusId) {
+            case KnStatuses.requestRefused.id:
+            case KnStatuses.waitList.id:
+                return !!request[statusId];
+                break;
+            case KnStatuses.requestSent.id:
+                // unanswered ONLY
+                return !request[KnStatuses.requestRefused.id] &&
+                    !request[KnStatuses.waitList.id] &&
+                    !!request[statusId];
+                break;
+        }
+        return false;
+    },
+
     parseCurrentStorage() {
         var requests = [];
         var saved = JSON.parse(localStorage.getItem('requests') || '{}');
@@ -79,20 +96,48 @@ var KnStorage = {
         while (t.hasChildNodes()) {
             t.removeChild(t.firstChild);
         }
-        requests.forEach((request) => {
-            var row = t.insertRow();
-            var leftCell = row.insertCell();
-            var rightCell = row.insertCell();
-            leftCell.innerText = `Kita: ${request.kitaName}\nRequestID: ${request.id}`;
-            for (var requestProp in request) {
-                if (KnStatuses.hasStatus(requestProp)) {
-                    var statusName = KnStatuses.fromId(requestProp).name;
-                    var line = `${statusName} : ${request[requestProp]}`
-                    rightCell.innerText = !!rightCell.innerText ?
-                        `${rightCell.innerText}\n\n${line}` : line;
+        var filter = KnStorage.getCurrentFilter();
+        requests.sort((r1, r2) => (r1.kitaName.localeCompare(r2.kitaName)))
+            .filter(r => !filter || KnStorage.checkFilter(r, filter))
+            .forEach((request, index) => {
+                var row = t.insertRow();
+                if (!!request[KnStatuses.requestRefused.id]) {
+                    console && console.log('declined cls');
+                    row.className = 'declined';
+                } else if (!!request[KnStatuses.waitList.id]) {
+                    row.className = 'waitlisted';
+                    console && console.log('waitlisted cls');
+                } else if (!!request[KnStatuses.requestSent.id]) {
+                    row.className = 'unanswered';
+                    console && console.log('unanswered cls');
                 }
-            }
-        });
+                var leftCell = row.insertCell();
+                var middleCell = row.insertCell();
+                var rightCell = row.insertCell();
+                leftCell.innerText = `${index + 1}`;
+                middleCell.innerText = `Kita: ${request.kitaName}\nRequestID: ${request.id}`;
+                for (var requestProp in request) {
+                    if (KnStatuses.hasStatus(requestProp)) {
+                        var statusName = KnStatuses.fromId(requestProp).name;
+                        var line = `${statusName} : ${request[requestProp]}`
+                        rightCell.innerText = !!rightCell.innerText ?
+                            `${rightCell.innerText}\n\n${line}` : line;
+                    }
+                }
+            });
+    },
+
+    setCurrentFilter(id) {
+        if (!!id) {
+            localStorage.setItem('currentFilter', `${id}`);
+        } else {
+            localStorage.removeItem('currentFilter');
+        }
+        KnStorage.parseCurrentStorage();
+    },
+
+    getCurrentFilter() {
+        return localStorage.getItem('currentFilter');
     }
 };
 
@@ -239,6 +284,12 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('processMessageList').addEventListener('click', () => KnList.refreshMessageList(true));
     document.getElementById('openAllTab').addEventListener('click', (e) => { KnTabs.openTab(e, 'allMessages') });
     document.getElementById('openGroupsTab').addEventListener('click', (e) => { KnTabs.openTab(e, 'messageGroups') });
+    // filters
+    document.getElementById('showUnanswered').addEventListener('click', KnStorage.setCurrentFilter.bind(this, KnStatuses.requestSent.id));
+    document.getElementById('showDeclined').addEventListener('click', KnStorage.setCurrentFilter.bind(this, KnStatuses.requestRefused.id));
+    document.getElementById('showWaitlisted').addEventListener('click', KnStorage.setCurrentFilter.bind(this, KnStatuses.waitList.id));
+    document.getElementById('showAll').addEventListener('click', KnStorage.setCurrentFilter.bind(this, null));
+
     KnTabs.openDefaultTab();
     KnList.refreshMessageList(false);
 });

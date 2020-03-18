@@ -1,8 +1,12 @@
-#knRequestsTable {
+table {
     min-width: 500px;
     max-width: 1000px;
     padding: 5px;
     margin: 5px;
+}
+
+button:hover {
+    cursor: pointer;
 }
 
 #knRequestsTable td {
@@ -14,17 +18,21 @@
     font-size: smaller;
 }
 
+#filtersTable button {
+    border-radius: 5px;
+    border: 2px chocolate solid;
+    width: 100%;
+}
+
 #processMessageList {
     width: 90%;
     padding: 5px;
     border: 2px chocolate solid;
     border-radius: 5px;
-    border-color: chocolate;
     background-color: peachpuff;
 }
 
 #processMessageList:hover {
-    cursor: pointer;
     background-color: coral;
 }
 
@@ -82,4 +90,20 @@ h3 {
     border: 1px solid #ccc;
     border-top: none;
     text-align: center;
+}
+
+.tabcontent .declined {
+    background-color: lightsalmon;
+}
+
+.tabcontent .waitlisted {
+    background-color: lightgoldenrodyellow;
+}
+
+.tabcontent .unanswered {
+    background-color: lightpink;
+}
+
+.tabcontent .all {
+    background-color: lightgray;
 }
