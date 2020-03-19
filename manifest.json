@@ -22,5 +22,11 @@
         "activeTab",
         "tabs",
         "https://konto.service.berlin.de/*"
-    ]
+    ],
+    "icons": {
+        "16": "poststamp_16.png",
+        "48": "poststamp_48.png",
+        "64": "poststamp_64.png",
+        "128": "poststamp_128.png"
+    }
 }

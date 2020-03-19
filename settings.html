@@ -20,7 +20,7 @@
         <p>You should be logged into Kita Navigator and have your 'Postfach' tab (Mailbox) open in Chrome. When you're on it, use the 'Process Messages' button to reload all messages into the extension.
             <b>Only do if if you suspect the list is out of sync.</b>
         </p>
-        <button id="processMessageList">Process Messages List</button>
+        <button id="processMessageList">Reload Message List</button>
         <h4>Filter Messages</h4>
         <table id="filtersTable">
             <tr>
@@ -35,8 +35,9 @@
     </div>
 
     <div id="messageGroups" class="tabcontent">
-        <h3>Grouped Messages</h3>
-        <p>Aggregated by type.</p>
+        <h3>Message statistics</h3>
+        <table id="statsTable">
+        </table>
     </div>
 </body>
 

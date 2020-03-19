@@ -1,5 +1,6 @@
 var KnSettingsConstants = {
     TABLE_ID: 'knRequestsTable',
+    STATS_TABLE_ID: 'statsTable',
     EVT_LOADED: 'knRequestsLoaded'
 }
 var KnStatuses = {
@@ -124,6 +125,70 @@ var KnStorage = {
             });
     },
 
+    parseMessageGroups() {
+        var requests = [];
+        var saved = JSON.parse(localStorage.getItem('requests') || '{}');
+        for (const key in saved) {
+            console && console.log(key);
+            const request = saved[key];
+            console && console.log('found saved request', request);
+            request.id = key;
+            requests.push(request);
+        }
+        var t = document.getElementById(KnSettingsConstants.STATS_TABLE_ID);
+        while (t.hasChildNodes()) {
+            t.removeChild(t.firstChild);
+        }
+        var declinedCount = 0,
+            declinedNames = [];
+        var waitlistedCount = 0,
+            waitlistedNames = [];
+        var unansweredCount = 0,
+            unansweredNames = [];
+        var totalCount = requests.length,
+            totalNames = requests.map(r => r.kitaName);
+
+        requests.forEach((request, index) => {
+            if (!!request[KnStatuses.requestRefused.id]) {
+                declinedCount++;
+                declinedNames.push(request.kitaName);
+            } else if (!!request[KnStatuses.waitList.id]) {
+                waitlistedCount++;
+                waitlistedNames.push(request.kitaName);
+            } else if (!!request[KnStatuses.requestSent.id]) {
+                unansweredCount++;
+                unansweredNames.push(request.kitaName);
+            }
+        });
+        // declined
+        var declinedRow = t.insertRow();
+        declinedRow.className = 'declined';
+        var leftCell = declinedRow.insertCell();
+        var rightCell = declinedRow.insertCell();
+        leftCell.innerText = `Declined requests: ${declinedCount}`;
+        rightCell.innerText = `${declinedNames.sort().join('\n')}`;
+        // waitlisted
+        var waitlistedRow = t.insertRow();
+        waitlistedRow.className = 'waitlisted';
+        var leftCell = waitlistedRow.insertCell();
+        var rightCell = waitlistedRow.insertCell();
+        leftCell.innerText = `Waitlisted requests: ${waitlistedCount}`;
+        rightCell.innerText = `${waitlistedNames.sort().join('\n')}`;
+        // unanswered
+        var unansweredRow = t.insertRow();
+        unansweredRow.className = 'unanswered';
+        var leftCell = unansweredRow.insertCell();
+        var rightCell = unansweredRow.insertCell();
+        leftCell.innerText = `Unanswered requests: ${unansweredCount}`;
+        rightCell.innerText = `${unansweredNames.sort().join('\n')}`;
+        // all
+        var totalRow = t.insertRow();
+        var leftCell = totalRow.insertCell();
+        var rightCell = totalRow.insertCell();
+        leftCell.innerText = `Total requests: ${totalCount}`;
+        rightCell.innerText = `${totalNames.sort().join('\n')}`;
+    },
+
     setCurrentFilter(id) {
         if (!!id) {
             localStorage.setItem('currentFilter', `${id}`);
@@ -163,6 +228,7 @@ var KnList = {
         if (processedCount >= links.length) {
             statusLabel.innerText = `All processed!`;
             KnStorage.parseCurrentStorage();
+            KnStorage.parseMessageGroups();
         } else {
             console && console.log('Processed count', processedCount);
         }
